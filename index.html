@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<title>Bibel App</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=Cinzel:wght@400;600&display=swap');
+
+:root {
+  --bg:       #f5efe3;
+  --bg2:      #ede4d3;
+  --bg3:      #e4d8c4;
+  --paper:    #faf6ee;
+  --border:   #c8b89a;
+  --text:     #3a2e1e;
+  --text2:    #6b5740;
+  --accent:   #7a5c2e;
+  --accent2:  #a07840;
+  --gold:     #c8972a;
+  --gold2:    #e6b84a;
+  --gold-bg:  #fff8e6;
+  --strong-h: #5a3e8a;
+  --strong-g: #2a6b5a;
+  --hdr:      52px;
+  --nav:      46px;
+  --sidebar:  300px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+html,body{
+  height:100%;
+  width:100%;
+  overflow:hidden;
+  font-family:'Crimson Pro',Georgia,serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* ── LAYOUT SHELL ── */
+#app{
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+  width:100%;
+  overflow:hidden;
+}
+
+/* ── HEADER ── */
+#hdr{
+  height:var(--hdr);
+  min-height:var(--hdr);
+  background:linear-gradient(135deg,#3a2e1e,#5a4530);
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:0 10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.35);
+  flex-shrink:0;
+  z-index:200;
+}
+#hdr h1{
+  font-family:'Cinzel',serif;
+  color:var(--gold2);
+  font-size:clamp(14px,3vw,19px);
+  font-weight:600;
+  letter-spacing:1px;
+  flex-shrink:0;
+}
+.hbtn{
+  background:rgba(200,151,42,.15);
+  border:1px solid rgba(200,151,42,.4);
+  color:var(--gold2);
+  padding:5px 9px;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:clamp(11px,2vw,13px);
+  font-family:'Crimson Pro',serif;
+  transition:all .2s;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.hbtn:hover{background:rgba(200,151,42,.3);}
+.hbtn.active{background:rgba(200,151,42,.4);border-color:var(--gold2);}
+#hdr-sp{flex:1;}
+
+/* settings gear */
+#btn-settings{
+  background:rgba(200,151,42,.1);
+  border:1px solid rgba(200,151,42,.3);
+  color:var(--gold2);
+  width:32px;height:32px;
+  border-radius:50%;
+  cursor:pointer;
+  font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:all .2s;
+}
+#btn-settings:hover{background:rgba(200,151,42,.3);transform:rotate(30deg);}
+
+/* Gemini button */
+#gemini-btn{
+  background:linear-gradient(135deg,#1a73e8,#0d47a1);
+  border:none;color:#fff;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:clamp(11px,2vw,13px);
+  display:flex;align-items:center;gap:5px;
+  transition:all .2s;
+  flex-shrink:0;
+}
+#gemini-btn:hover{filter:brightness(1.15);}
+#gemini-btn.thinking{animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+
+/* ── NAV BAR ── */
+#nav{
+  height:var(--nav);
+  min-height:var(--nav);
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:0 10px;
+  flex-shrink:0;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+#nav::-webkit-scrollbar{display:none;}
+.nlbl{font-size:11px;color:var(--text2);font-weight:600;letter-spacing:.5px;flex-shrink:0;}
+.nsel{
+  background:var(--paper);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:4px 7px;
+  border-radius:6px;
+  font-family:'Crimson Pro',serif;
+  font-size:clamp(12px,2.5vw,14px);
+  cursor:pointer;
+  flex-shrink:0;
+}
+.nsel:focus{outline:none;border-color:var(--accent);}
+#sel-book{max-width:min(200px,40vw);}
+.carr{
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--accent2);
+  width:28px;height:28px;
+  border-radius:5px;
+  cursor:pointer;
+  font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:background .15s;
+}
+.carr:hover{background:var(--bg3);}
+
+/* ── BODY ── */
+#body{
+  flex:1;
+  display:flex;
+  overflow:hidden;
+  min-height:0;
+}
+
+/* ── PANELS ── */
+#panels{
+  flex:1;
+  display:flex;
+  overflow:hidden;
+  min-height:0;
+  min-width:0;
+}
+.bpanel{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border-right:1px solid var(--border);
+  min-width:0;
+}
+.bpanel:last-child{border-right:none;}
+.phdr{
+  background:var(--bg3);
+  border-bottom:1px solid var(--border);
+  padding:5px 8px;
+  display:flex;align-items:center;gap:6px;
+  flex-shrink:0;
+}
+.ptitle{font-family:'Cinzel',serif;font-size:12px;color:var(--accent);font-weight:600;}
+.pbsel{
+  background:var(--paper);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:3px 6px;
+  border-radius:5px;
+  font-size:12px;
+  font-family:'Crimson Pro',serif;
+}
+.pscroll{
+  flex:1;
+  overflow-y:auto;
+  padding:14px 12px;
+  background:var(--paper);
+  -webkit-overflow-scrolling:touch;
+  scroll-behavior:smooth;
+}
+
+/* ── VERSES ── */
+.chap-title{
+  font-family:'Cinzel',serif;
+  font-size:clamp(13px,3vw,16px);
+  color:var(--accent);
+  text-align:center;
+  padding:6px 0 14px;
+  letter-spacing:.5px;
+}
+.vrow{
+  display:flex;
+  gap:5px;
+  margin-bottom:5px;
+  padding:4px 5px;
+  border-radius:6px;
+  transition:background .15s;
+}
+.vrow:hover{background:rgba(122,92,46,.06);}
+.vrow.hl{background:rgba(200,151,42,.18)!important;transition:none;}
+.vnum{
+  font-size:11px;font-weight:600;
+  color:var(--accent2);
+  min-width:22px;padding-top:3px;
+  cursor:pointer;user-select:none;flex-shrink:0;
+}
+.vnum:hover{color:var(--gold);}
+.vtxt{font-size:clamp(13px,2.5vw,15px);line-height:1.75;color:var(--text);flex:1;word-break:break-word;}
+.vicons{display:flex;gap:2px;align-items:flex-start;padding-top:3px;flex-shrink:0;}
+.vic{font-size:12px;cursor:pointer;opacity:.65;transition:opacity .15s;}
+.vic:hover{opacity:1;}
+.vic.own{color:var(--gold);opacity:.95;}
+.vic.com{color:#5a7abf;}
+
+/* Strong numbers */
+.sn{
+  font-size:9px;vertical-align:super;
+  color:var(--strong-h);
+  cursor:pointer;padding:1px 2px;border-radius:3px;
+  transition:all .15s;font-family:monospace;
+}
+.sn:hover{background:rgba(90,62,138,.15);}
+.sn.g{color:var(--strong-g);}
+.sn.g:hover{background:rgba(42,107,90,.15);}
+.sn.active-sn{background:rgba(200,151,42,.35)!important;color:var(--gold)!important;outline:1px solid var(--gold);border-radius:3px;}
+
+/* highlighted word in verse */
+.sword{
+  background:rgba(200,151,42,.28);
+  border-bottom:2px solid var(--gold);
+  border-radius:2px;
+  padding:0 1px;
+  transition:background .2s;
+}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  width:var(--sidebar);
+  max-width:90vw;
+  background:var(--bg2);
+  border-left:2px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  flex-shrink:0;
+  transition:width .25s,max-width .25s;
+}
+#sidebar.hidden{width:0;max-width:0;border-left:none;overflow:hidden;}
+
+#stabs{
+  display:flex;
+  background:var(--bg3);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.stab{
+  flex:1;padding:8px 3px;
+  text-align:center;font-size:11px;cursor:pointer;
+  color:var(--text2);border-bottom:2px solid transparent;
+  transition:all .2s;white-space:nowrap;
+}
+.stab:hover{color:var(--accent);}
+.stab.active{color:var(--accent);border-bottom-color:var(--gold);font-weight:600;}
+
+#scontent{flex:1;overflow-y:auto;padding:10px;-webkit-overflow-scrolling:touch;}
+
+/* sidebar cards */
+.scard{
+  background:var(--paper);border:1px solid var(--border);
+  border-radius:8px;padding:10px;margin-bottom:10px;
+}
+.snum-lbl{font-family:'Cinzel',serif;font-size:15px;color:var(--strong-h);font-weight:600;}
+.snum-lbl.g{color:var(--strong-g);}
+.slexeme{font-size:20px;margin:3px 0;color:var(--text);}
+.stranslit{font-size:12px;color:var(--text2);font-style:italic;}
+.sdef{font-size:12px;color:var(--text);margin-top:7px;line-height:1.55;}
+.sdef a{color:var(--accent);cursor:pointer;text-decoration:none;}
+.sdef a:hover{text-decoration:underline;}
+
+/* concordance nav */
+.conc-nav{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:7px;padding:6px 8px;margin:6px 0;
+}
+.cnav-btn{
+  background:var(--paper);border:1px solid var(--border);
+  color:var(--accent2);padding:4px 8px;border-radius:5px;
+  cursor:pointer;font-size:13px;transition:all .15s;
+  flex-shrink:0;
+}
+.cnav-btn:hover{background:var(--bg3);}
+.cnav-btn:disabled{opacity:.35;cursor:default;}
+.cnav-pos{font-size:12px;color:var(--text2);flex:1;text-align:center;}
+
+.ctoggle{display:flex;gap:5px;margin:6px 0;}
+.ctbtn{
+  flex:1;padding:4px;border:1px solid var(--border);
+  border-radius:5px;background:var(--bg2);color:var(--text2);
+  font-size:11px;cursor:pointer;font-family:'Crimson Pro',serif;transition:all .2s;
+}
+.ctbtn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+.clist{margin-top:4px;}
+.citem{
+  padding:6px 7px;border-radius:5px;cursor:pointer;
+  font-size:12px;line-height:1.5;
+  border-bottom:1px solid rgba(200,184,154,.35);transition:background .15s;
+}
+.citem:hover{background:rgba(122,92,46,.08);}
+.citem.active-conc{background:rgba(200,151,42,.15);}
+.cref{font-size:11px;font-weight:600;color:var(--accent2);display:block;margin-bottom:1px;}
+
+/* xref */
+.xitem{
+  padding:8px;border-radius:6px;margin-bottom:5px;
+  background:var(--paper);border-left:3px solid var(--border);
+  cursor:pointer;font-size:12px;line-height:1.5;transition:background .15s;
+}
+.xitem:hover{background:var(--bg3);}
+.xitem.own{border-left-color:var(--gold);background:var(--gold-bg);}
+.xown-badge{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.5px;margin-bottom:2px;}
+
+/* comment */
+.cmitem{
+  padding:8px;border-radius:6px;background:var(--paper);
+  border-left:3px solid #5a7abf;margin-bottom:5px;
+  font-size:12px;line-height:1.5;
+}
+.cmmk{font-size:11px;color:#5a7abf;font-weight:600;margin-bottom:2px;}
+
+/* section head */
+.shd{
+  font-family:'Cinzel',serif;font-size:10px;color:var(--text2);
+  letter-spacing:.8px;padding:5px 0 3px;
+  border-bottom:1px solid var(--border);margin-bottom:5px;
+}
+
+/* ── GEMINI PANEL in sidebar ── */
+#gemini-panel{display:none;flex-direction:column;height:100%;}
+#gemini-panel.show{display:flex;}
+
+.gprompt-area{
+  padding:10px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.gprompt-area textarea{
+  width:100%;border:1px solid var(--border);border-radius:6px;
+  padding:7px;background:var(--bg);color:var(--text);
+  font-family:'Crimson Pro',serif;font-size:13px;
+  resize:none;height:70px;
+}
+.gprompt-area textarea:focus{outline:none;border-color:var(--accent);}
+.gprompt-hint{font-size:10px;color:var(--text2);margin-top:4px;font-style:italic;}
+.gsend{
+  width:100%;margin-top:6px;
+  background:linear-gradient(135deg,#1a73e8,#0d47a1);
+  color:#fff;border:none;padding:8px;border-radius:6px;
+  cursor:pointer;font-family:'Crimson Pro',serif;font-size:13px;
+  transition:all .2s;
+}
+.gsend:hover{filter:brightness(1.12);}
+.gsend:disabled{opacity:.5;cursor:default;}
+#gemini-response{
+  flex:1;overflow-y:auto;padding:10px;
+  font-size:13px;line-height:1.65;color:var(--text);
+  -webkit-overflow-scrolling:touch;
+}
+.gresp-thinking{color:var(--text2);font-style:italic;font-size:12px;}
+.gresp-content{white-space:pre-wrap;}
+.gresp-error{color:#c0392b;font-size:12px;}
+.gver-ctx{
+  background:var(--gold-bg);border:1px solid rgba(200,151,42,.4);
+  border-radius:6px;padding:7px;margin-bottom:8px;
+  font-size:11px;color:var(--accent2);
+}
+
+/* ── SETTINGS MODAL ── */
+#settings-modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.55);z-index:1000;
+  align-items:center;justify-content:center;padding:16px;
+}
+#settings-modal.show{display:flex;}
+.sbox{
+  background:var(--paper);border-radius:12px;
+  padding:20px;width:min(400px,95vw);
+  box-shadow:0 8px 32px rgba(0,0,0,.3);
+  border:1px solid var(--border);
+}
+.sbox h3{font-family:'Cinzel',serif;color:var(--accent);margin-bottom:14px;font-size:15px;}
+.sbox label{font-size:13px;color:var(--text2);display:block;margin-bottom:4px;}
+.sbox input{
+  width:100%;border:1px solid var(--border);border-radius:6px;
+  padding:8px;background:var(--bg);color:var(--text);
+  font-family:'Crimson Pro',serif;font-size:13px;margin-bottom:12px;
+}
+.sbox input:focus{outline:none;border-color:var(--accent);}
+.sbox-btns{display:flex;gap:8px;margin-top:4px;}
+.sbtn-save{
+  flex:1;background:var(--accent);color:#fff;
+  border:none;padding:9px;border-radius:6px;
+  cursor:pointer;font-family:'Crimson Pro',serif;font-size:14px;
+}
+.sbtn-cancel{
+  background:var(--bg2);border:1px solid var(--border);
+  color:var(--text2);padding:9px 14px;border-radius:6px;
+  cursor:pointer;font-family:'Crimson Pro',serif;font-size:14px;
+}
+.key-status{font-size:11px;margin-top:4px;}
+.key-status.ok{color:green;}
+.key-status.no{color:var(--text2);}
+
+/* ── LOADING ── */
+#loading{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:9999;
+}
+#loading h2{font-family:'Cinzel',serif;color:var(--accent);margin-bottom:16px;font-size:clamp(18px,4vw,24px);}
+.lbar{width:min(260px,70vw);height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.lfill{height:100%;background:var(--gold);width:0%;transition:width .3s;border-radius:2px;}
+#ltxt{font-size:13px;color:var(--text2);margin-top:10px;}
+
+/* ── RESPONSIVE BREAKPOINTS ── */
+/* Mobile: sidebar overlays */
+@media(max-width:600px){
+  #sidebar{
+    position:fixed;right:0;top:0;bottom:0;
+    z-index:300;box-shadow:-4px 0 16px rgba(0,0,0,.25);
+    width:min(320px,92vw)!important;max-width:92vw!important;
+    transition:transform .25s;
+    transform:translateX(0);
+  }
+  #sidebar.hidden{
+    width:min(320px,92vw)!important;max-width:92vw!important;
+    transform:translateX(100%);
+    border-left:none;
+  }
+  #sel-book{max-width:130px;}
+  .ptitle{display:none;}
+  :root{--sidebar:min(320px,92vw);}
+}
+
+/* Small tablets */
+@media(min-width:601px) and (max-width:900px){
+  :root{--sidebar:260px;}
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--accent2);}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <h2>✝ Bibel App</h2>
+  <div class="lbar"><div class="lfill" id="lfill"></div></div>
+  <div id="ltxt">Initialisiere...</div>
+</div>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <div id="hdr">
+    <h1>✝ BIBEL</h1>
+    <button class="hbtn" id="btn-par" onclick="toggleParallel()">⊞ Parallel</button>
+    <button class="hbtn active" id="btn-xref" onclick="toggleXrefs()" title="Eigene Querverweise ein/ausblenden">✦ Verweise</button>
+    <button class="hbtn" id="btn-sb" onclick="toggleSidebar()">◧ Info</button>
+    <div id="hdr-sp"></div>
+    <button id="gemini-btn" onclick="openGeminiPanel()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+      Gemini
+    </button>
+    <button id="btn-settings" onclick="openSettings()" title="Einstellungen">⚙</button>
+  </div>
+
+  <!-- NAV -->
+  <div id="nav">
+    <span class="nlbl">BUCH</span>
+    <select class="nsel" id="sel-book" onchange="onBookChange()"></select>
+    <span class="nlbl">KAP</span>
+    <button class="carr" onclick="prevChap()">‹</button>
+    <select class="nsel" id="sel-chap" onchange="onChapChange()" style="width:54px"></select>
+    <button class="carr" onclick="nextChap()">›</button>
+  </div>
+
+  <!-- BODY -->
+  <div id="body">
+    <div id="panels">
+      <!-- Panel 1 -->
+      <div class="bpanel" id="panel1">
+        <div class="phdr">
+          <span class="ptitle">BIBEL 1</span>
+          <select class="pbsel" id="p1b" onchange="renderPanel(1)">
+            <option value="s51">Schlachter 1951</option>
+            <option value="leo">Leonberger NA28</option>
+          </select>
+        </div>
+        <div class="pscroll" id="p1s" onscroll="syncScroll(1)"></div>
+      </div>
+      <!-- Panel 2 -->
+      <div class="bpanel" id="panel2" style="display:none">
+        <div class="phdr">
+          <span class="ptitle">BIBEL 2</span>
+          <select class="pbsel" id="p2b" onchange="renderPanel(2)">
+            <option value="leo">Leonberger NA28</option>
+            <option value="s51">Schlachter 1951</option>
+          </select>
+        </div>
+        <div class="pscroll" id="p2s" onscroll="syncScroll(2)"></div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar" class="hidden">
+      <div id="stabs">
+        <div class="stab active" onclick="setTab('strong')">Strong</div>
+        <div class="stab" onclick="setTab('xref')">Verweise</div>
+        <div class="stab" onclick="setTab('comment')">Kommentar</div>
+        <div class="stab" onclick="setTab('gemini')">✦ KI</div>
+      </div>
+      <!-- Normal content -->
+      <div id="scontent">
+        <div style="color:var(--text2);font-size:13px;text-align:center;padding:24px 10px;">
+          Tippe auf eine Strong-Nummer oder ein Vers-Symbol
+        </div>
+      </div>
+      <!-- Gemini panel (replaces scontent when active) -->
+      <div id="gemini-panel">
+        <div class="gprompt-area">
+          <div class="gver-ctx" id="gctx">Kein Vers ausgewählt – tippe auf eine Versnummer</div>
+          <textarea id="ginput" placeholder="Deine Frage zum Vers..."></textarea>
+          <div class="gprompt-hint">Preteristischer Kontext wird automatisch hinzugefügt</div>
+          <button class="gsend" id="gsend-btn" onclick="sendGemini()">▶ Fragen</button>
+        </div>
+        <div id="gemini-response">
+          <div style="color:var(--text2);font-size:12px;font-style:italic;padding:10px 0;">
+            Antwort erscheint hier...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="settings-modal">
+  <div class="sbox">
+    <h3>⚙ Einstellungen</h3>
+    <label>Gemini API Key</label>
+    <input type="password" id="api-key-input" placeholder="AIza...">
+    <div class="key-status" id="key-status"></div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px;">
+      Kostenlos unter: <strong>aistudio.google.com</strong> → „Get API Key"
+    </div>
+    <div class="sbox-btns">
+      <button class="sbtn-cancel" onclick="closeSettings()">Abbrechen</button>
+      <button class="sbtn-save" onclick="saveSettings()">💾 Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+const S = {
+  book: "470", chap: "1",
+  parallel: false, sidebarOpen: false,
+  activeTab: "strong",
+  verseRef: null,       // {b,c,v} for gemini
+  concMode: "refs",
+  concIdx: 0,           // current position in concordance
+  currentStrong: null,
+  syncing: false,
+  apiKey: 'AIzaSyDCBvD6LoGOBGfTbIZKWn2E2RklkE2KEc8',
+  showXrefs: true
+};
+
+let DATA = null;
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function bkName(n){ const k=String(n); return (DATA.bs[k]||DATA.bl[k]||['?'])[0]; }
+function bkLong(n){ const k=String(n); return (DATA.bs[k]||DATA.bl[k]||['?','?'])[1]; }
+function vRef(b,c,v){ return `${bkName(b)} ${c},${v}`; }
+
+function getVerse(b,c,v){
+  const k=`${b}_${c}_${v}`;
+  return DATA.vs[k] || DATA.vl[k] || '';
+}
+
+function plainText(html){
+  return html.replace(/<[^>]*>/g,'');
+}
+
+// ═══════════════════════════════════════════
+// VERSE PARSING
+// ═══════════════════════════════════════════
+function parseVerse(text, bookNum, activeSn){
+  if(!text) return '<em style="color:var(--text2)">—</em>';
+  const isNT = bookNum >= 470;
+  // First pass: wrap word+strong together so we can highlight the word
+  // Pattern: word(s) immediately before <S>n</S>
+  let result = text
+    .replace(/<pb\/>/g,'')
+    .replace(/<m>[^<]*<\/m>/g,'');
+
+  // Match: optional word chars before <S>digits</S>
+  result = result.replace(/([^\s<>]+)?(<S>(\d+)<\/S>)/g, (full, word, stag, n) => {
+    const pfx = isNT ? 'G' : 'H';
+    const snKey = pfx + n;
+    const cls = isNT ? 'sn g' : 'sn';
+    const isActive = activeSn && activeSn === snKey;
+    const snHtml = `<sup class="${cls}${isActive?' active-sn':''}" onclick="showStrong('${snKey}',${bookNum})" title="${snKey}">${n}</sup>`;
+    if(word){
+      return isActive
+        ? `<span class="sword">${word}</span>${snHtml}`
+        : `${word}${snHtml}`;
+    }
+    return snHtml;
+  });
+  return result;
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+function renderPanel(p){
+  const bid = document.getElementById(`p${p}b`).value;
+  const scr = document.getElementById(`p${p}s`);
+  const b = parseInt(S.book), c = parseInt(S.chap);
+  const chapD = bid==='s51' ? DATA.cs : DATA.cl;
+  const bStr=String(b), cStr=String(c);
+
+  if(!chapD[bStr]||!chapD[bStr][cStr]){
+    scr.innerHTML=`<div style="padding:24px;color:var(--text2);font-style:italic;text-align:center">${bkLong(b)} ist in dieser Bibel nicht verfügbar</div>`;
+    return;
+  }
+
+  const maxV = chapD[bStr][cStr];
+  let html = `<div class="chap-title">${bkLong(b)} – Kapitel ${c}</div>`;
+
+  for(let v=1;v<=maxV;v++){
+    const key=`${b}_${c}_${v}`;
+    const hasX = !!DATA.x[key];
+    const hasC = !!DATA.co[key] && bid==='leo';
+    let icons='';
+    if(hasX && S.showXrefs) icons+=`<span class="vic own" title="Eigener Querverweis (Gold)" onclick="showXref(${b},${c},${v})">✦</span>`;
+    if(hasC) icons+=`<span class="vic com" title="Kommentar" onclick="showComment(${b},${c},${v})">✎</span>`;
+
+    html+=`<div class="vrow" id="p${p}v${v}">
+      <span class="vnum" onclick="selectVerse(${b},${c},${v})">${v}</span>
+      <span class="vtxt">${parseVerse(getVerse(b,c,v),b,S.currentStrong)}</span>
+      <div class="vicons">${icons}</div>
+    </div>`;
+  }
+  scr.innerHTML=html;
+}
+
+function renderAll(){
+  renderPanel(1);
+  if(S.parallel) renderPanel(2);
+}
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function populateBooks(){
+  const sel=document.getElementById('sel-book');
+  sel.innerHTML='';
+  for(const [num,info] of Object.entries(DATA.bs)){
+    const o=document.createElement('option');
+    o.value=num; o.textContent=`${info[0]} – ${info[1].slice(0,28)}`;
+    if(num===S.book) o.selected=true;
+    sel.appendChild(o);
+  }
+}
+
+function populateChaps(){
+  const sel=document.getElementById('sel-chap');
+  sel.innerHTML='';
+  const cd=DATA.cs[S.book]||DATA.cl[S.book]||{};
+  Object.keys(cd).map(Number).sort((a,b)=>a-b).forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c; o.textContent=c;
+    if(String(c)===S.chap) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+
+function onBookChange(){ S.book=document.getElementById('sel-book').value; S.chap="1"; populateChaps(); renderAll(); }
+function onChapChange(){ S.chap=document.getElementById('sel-chap').value; renderAll(); }
+
+function prevChap(){
+  const cd=DATA.cs[S.book]||DATA.cl[S.book]||{};
+  const chs=Object.keys(cd).map(Number).sort((a,b)=>a-b);
+  const i=chs.indexOf(parseInt(S.chap));
+  if(i>0){ S.chap=String(chs[i-1]); document.getElementById('sel-chap').value=S.chap; renderAll(); }
+  else {
+    const bks=Object.keys(DATA.bs).map(Number).sort((a,b)=>a-b);
+    const bi=bks.indexOf(parseInt(S.book));
+    if(bi>0){
+      S.book=String(bks[bi-1]); document.getElementById('sel-book').value=S.book;
+      const pcd=DATA.cs[S.book]||{};
+      const pc=Object.keys(pcd).map(Number).sort((a,b)=>a-b);
+      S.chap=String(pc[pc.length-1]||1); populateChaps(); renderAll();
+    }
+  }
+}
+
+function nextChap(){
+  const cd=DATA.cs[S.book]||DATA.cl[S.book]||{};
+  const chs=Object.keys(cd).map(Number).sort((a,b)=>a-b);
+  const i=chs.indexOf(parseInt(S.chap));
+  if(i<chs.length-1){ S.chap=String(chs[i+1]); document.getElementById('sel-chap').value=S.chap; renderAll(); }
+  else {
+    const bks=Object.keys(DATA.bs).map(Number).sort((a,b)=>a-b);
+    const bi=bks.indexOf(parseInt(S.book));
+    if(bi<bks.length-1){
+      S.book=String(bks[bi+1]); document.getElementById('sel-book').value=S.book;
+      S.chap="1"; populateChaps(); renderAll();
+    }
+  }
+}
+
+function navToVerse(b,c,v){
+  S.book=String(b); S.chap=String(c);
+  document.getElementById('sel-book').value=S.book;
+  populateChaps(); renderAll();
+  setTimeout(()=>{
+    ['p1v','p2v'].forEach(pre=>{
+      const el=document.getElementById(pre+v);
+      if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.add('hl'); setTimeout(()=>el.classList.remove('hl'),2200); }
+    });
+  },120);
+}
+
+// ═══════════════════════════════════════════
+// PARALLEL + SCROLL SYNC
+// ═══════════════════════════════════════════
+function toggleXrefs(){
+  S.showXrefs=!S.showXrefs;
+  document.getElementById('btn-xref').classList.toggle('active',S.showXrefs);
+  renderAll();
+}
+
+function toggleParallel(){
+  S.parallel=!S.parallel;
+  document.getElementById('panel2').style.display=S.parallel?'flex':'none';
+  document.getElementById('btn-par').classList.toggle('active',S.parallel);
+  if(S.parallel) renderPanel(2);
+}
+
+function syncScroll(from){
+  if(S.syncing) return; S.syncing=true;
+  const a=document.getElementById(`p${from}s`);
+  const b=document.getElementById(`p${from===1?2:1}s`);
+  if(b&&S.parallel){
+    const r=a.scrollTop/(a.scrollHeight-a.clientHeight||1);
+    b.scrollTop=r*(b.scrollHeight-b.clientHeight);
+  }
+  setTimeout(()=>{ S.syncing=false; },40);
+}
+
+// ═══════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════
+function openSidebar(){ if(!S.sidebarOpen){ S.sidebarOpen=true; document.getElementById('sidebar').classList.remove('hidden'); document.getElementById('btn-sb').classList.add('active'); } }
+function toggleSidebar(){ S.sidebarOpen=!S.sidebarOpen; document.getElementById('sidebar').classList.toggle('hidden',!S.sidebarOpen); document.getElementById('btn-sb').classList.toggle('active',S.sidebarOpen); }
+
+function setTab(tab){
+  S.activeTab=tab;
+  document.querySelectorAll('.stab').forEach((t,i)=>t.classList.toggle('active',['strong','xref','comment','gemini'][i]===tab));
+  const sc=document.getElementById('scontent');
+  const gp=document.getElementById('gemini-panel');
+  if(tab==='gemini'){ sc.style.display='none'; gp.classList.add('show'); }
+  else { sc.style.display=''; gp.classList.remove('show'); }
+}
+
+// ═══════════════════════════════════════════
+// STRONG NUMBERS
+// ═══════════════════════════════════════════
+function closeStrong(){
+  S.currentStrong=null;
+  document.getElementById('scontent').innerHTML=`<div style="color:var(--text2);font-size:13px;text-align:center;padding:24px 10px;">Tippe auf eine Strong-Nummer oder ein Vers-Symbol</div>`;
+  renderAll(); // remove word highlights
+}
+
+function showStrong(sn, bookNum){
+  openSidebar(); setTab('strong');
+  S.currentStrong=sn; S.concIdx=0;
+  renderAll(); // re-render to highlight the word
+  renderStrongPanel();
+}
+
+function renderStrongPanel(){
+  const sn=S.currentStrong;
+  if(!sn) return;
+  const entry=DATA.d[sn];
+  const occ=DATA.sc[sn]||[];
+  const isG=sn.startsWith('G');
+  const idx=S.concIdx;
+
+  let html=`<div style="display:flex;justify-content:flex-end;margin-bottom:5px;">
+    <button onclick="closeStrong()" style="background:none;border:1px solid var(--border);color:var(--text2);border-radius:5px;padding:3px 10px;cursor:pointer;font-size:13px;line-height:1;" title="Schließen">✕</button>
+  </div>
+  <div class="scard">
+    <div class="snum-lbl ${isG?'g':''}">${sn}</div>
+    <div class="slexeme">${entry?entry[0]:''}</div>
+    <div class="stranslit">${entry?entry[1]:''} ${entry&&entry[2]?'/ '+entry[2]:''}</div>
+    ${entry&&entry[3]?`<div class="sdef">${processRef(entry[3])}</div>`:''}
+  </div>`;
+
+  html+=`<div class="shd">VORKOMMEN (${occ.length})</div>`;
+
+  // Concordance nav arrows
+  if(occ.length>0){
+    const [cb,cc,cv]=occ[idx];
+    html+=`<div class="conc-nav">
+      <button class="cnav-btn" onclick="concNav(-1)" ${idx===0?'disabled':''}>‹ Vorher</button>
+      <span class="cnav-pos">${idx+1} / ${occ.length}<br><small>${vRef(cb,cc,cv)}</small></span>
+      <button class="cnav-btn" onclick="concNav(1)" ${idx===occ.length-1?'disabled':''}>Weiter ›</button>
+    </div>`;
+  }
+
+  html+=`<div class="ctoggle">
+    <button class="ctbtn ${S.concMode==='refs'?'active':''}" onclick="setConcMode('refs')">Stellenangaben</button>
+    <button class="ctbtn ${S.concMode==='verses'?'active':''}" onclick="setConcMode('verses')">Mit Verstext</button>
+  </div><div class="clist">`;
+
+  occ.forEach(([b,c,v],i)=>{
+    const ref=vRef(b,c,v);
+    const isActive=i===idx;
+    if(S.concMode==='refs'){
+      html+=`<div class="citem${isActive?' active-conc':''}" id="ci${i}" onclick="concJump(${i},${b},${c},${v})"><span class="cref">${ref}</span></div>`;
+    } else {
+      const txt=parseVerse(getVerse(b,c,v),b,sn);
+      html+=`<div class="citem${isActive?' active-conc':''}" id="ci${i}" onclick="concJump(${i},${b},${c},${v})"><span class="cref">${ref}</span>${txt}</div>`;
+    }
+  });
+  html+=`</div>`;
+
+  document.getElementById('scontent').innerHTML=html;
+
+  // Scroll active concordance item into view
+  setTimeout(()=>{
+    const el=document.getElementById(`ci${idx}`);
+    if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },80);
+}
+
+function concNav(dir){
+  const occ=DATA.sc[S.currentStrong]||[];
+  const newIdx=S.concIdx+dir;
+  if(newIdx<0||newIdx>=occ.length) return;
+  S.concIdx=newIdx;
+  const [b,c,v]=occ[newIdx];
+  navToVerse(b,c,v);
+  renderStrongPanel();
+}
+
+function concJump(i,b,c,v){
+  S.concIdx=i;
+  navToVerse(b,c,v);
+  renderStrongPanel();
+}
+
+function setConcMode(m){ S.concMode=m; renderStrongPanel(); }
+
+function processRef(def){
+  return def.replace(/<a href='B:(\d+) (\d+):(\d+)'>/g,(_,b,c,v)=>`<a onclick="navToVerse(${b},${c},${v})" href="javascript:void(0)">`);
+}
+
+// ═══════════════════════════════════════════
+// XREF
+// ═══════════════════════════════════════════
+function showXref(b,c,v){
+  openSidebar(); setTab('xref');
+  const key=`${b}_${c}_${v}`;
+  const refs=DATA.x[key]||[];
+  let html=`<div class="shd">VERWEISE ZU ${vRef(b,c,v)}</div>`;
+  if(!refs.length){ html+=`<div style="color:var(--text2);font-size:12px;padding:8px 0">Keine Verweise</div>`; }
+  else {
+    refs.forEach(([tb,tc,tv])=>{
+      const t=plainText(parseVerse(getVerse(tb,tc,tv),tb));
+      html+=`<div class="xitem own" onclick="navToVerse(${tb},${tc},${tv})">
+        <div class="xown-badge">✦ EIGENER VERWEIS</div>
+        <div style="font-weight:600;font-size:11px;color:var(--accent2);margin-bottom:2px">${vRef(tb,tc,tv)}</div>
+        <div>${t}</div>
+      </div>`;
+    });
+  }
+  document.getElementById('scontent').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════
+// COMMENTARY
+// ═══════════════════════════════════════════
+function showComment(b,c,v){
+  openSidebar(); setTab('comment');
+  const key=`${b}_${c}_${v}`;
+  const coms=DATA.co[key]||[];
+  let html=`<div class="shd">KOMMENTAR ${vRef(b,c,v)}</div>`;
+  if(!coms.length){ html+=`<div style="color:var(--text2);font-size:12px;padding:8px 0">Kein Kommentar</div>`; }
+  else { coms.forEach(([mk,tx])=>{ html+=`<div class="cmitem"><div class="cmmk">${mk}</div>${tx}</div>`; }); }
+  document.getElementById('scontent').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════
+// VERSE SELECT (for Gemini)
+// ═══════════════════════════════════════════
+function selectVerse(b,c,v){
+  S.verseRef={b,c,v};
+  const ref=vRef(b,c,v);
+  document.getElementById('gctx').textContent=`Vers: ${ref}`;
+  // quick visual feedback
+  ['p1v','p2v'].forEach(pre=>{
+    const el=document.getElementById(pre+v);
+    if(el){ el.classList.add('hl'); setTimeout(()=>el.classList.remove('hl'),800); }
+  });
+}
+
+// ═══════════════════════════════════════════
+// GEMINI
+// ═══════════════════════════════════════════
+function openGeminiPanel(){
+  openSidebar(); setTab('gemini');
+  if(S.verseRef){
+    const {b,c,v}=S.verseRef;
+    document.getElementById('gctx').textContent=`Vers: ${vRef(b,c,v)}`;
+    document.getElementById('ginput').value=``;
+  }
+}
+
+async function sendGemini(){
+  const key=S.apiKey;
+  if(!key){
+    document.getElementById('gemini-response').innerHTML=`<div class="gresp-error">⚠ Kein API Key. Bitte im ⚙ Einstellungen eingeben.</div>`;
+    return;
+  }
+  const userQ=document.getElementById('ginput').value.trim();
+  if(!userQ) return;
+
+  const btn=document.getElementById('gsend-btn');
+  btn.disabled=true; btn.textContent='⏳ Denkt...';
+  document.getElementById('gemini-btn').classList.add('thinking');
+  document.getElementById('gemini-response').innerHTML=`<div class="gresp-thinking">Gemini denkt nach...</div>`;
+
+  const SYSTEM=`Du bist ein Bibelerklärer. Erkläre Bibelverse AUSSCHLIESSLICH aus der preteristischen Sichtweise. 
+Der Preterismus lehrt, dass die meisten prophetischen Texte der Bibel sich bereits in der Vergangenheit (vor 70 n.Chr., der Zerstörung Jerusalems) erfüllt haben. 
+Antworte auf Deutsch, klar und verständlich.`;
+
+  let prompt = SYSTEM + "\n\n";
+  if(S.verseRef){
+    const {b,c,v}=S.verseRef;
+    const ref=vRef(b,c,v);
+    const txt=plainText(getVerse(b,c,v));
+    prompt+=`Bibelstelle: ${ref}\nVerstext: "${txt}"\n\nFrage: ${userQ}`;
+  } else {
+    prompt+=`Frage: ${userQ}`;
+  }
+
+  try {
+    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:prompt}]}],
+        generationConfig:{temperature:0.7,maxOutputTokens:800}
+      })
+    });
+    const data=await resp.json();
+    if(data.error){
+      document.getElementById('gemini-response').innerHTML=`<div class="gresp-error">Fehler: ${data.error.message}</div>`;
+    } else {
+      const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'Keine Antwort';
+      document.getElementById('gemini-response').innerHTML=`<div class="gresp-content">${escHtml(text)}</div>`;
+    }
+  } catch(e){
+    document.getElementById('gemini-response').innerHTML=`<div class="gresp-error">Verbindungsfehler: ${e.message}</div>`;
+  }
+
+  btn.disabled=false; btn.textContent='▶ Fragen';
+  document.getElementById('gemini-btn').classList.remove('thinking');
+}
+
+function escHtml(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ═══════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════
+function openSettings(){
+  document.getElementById('api-key-input').value=S.apiKey;
+  updateKeyStatus();
+  document.getElementById('settings-modal').classList.add('show');
+}
+function closeSettings(){ document.getElementById('settings-modal').classList.remove('show'); }
+function saveSettings(){
+  const input=document.getElementById('api-key-input').value.trim();
+  S.apiKey=input || 'AIzaSyDCBvD6LoGOBGfTbIZKWn2E2RklkE2KEc8';
+  localStorage.setItem('gemini_key',S.apiKey);
+  updateKeyStatus();
+  closeSettings();
+}
+function updateKeyStatus(){
+  const el=document.getElementById('key-status');
+  if(S.apiKey){ el.textContent='✓ API Key gespeichert'; el.className='key-status ok'; }
+  else { el.textContent='Noch kein Key eingegeben'; el.className='key-status no'; }
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+
+// ── SWIPE GESTURES ──
+(function(){
+  let tx=0, ty=0, target=null;
+
+  function onStart(e){
+    const t = e.touches[0];
+    tx = t.clientX; ty = t.clientY;
+    target = e.target;
+  }
+
+  function onEnd(e){
+    const t = e.changedTouches[0];
+    const dx = t.clientX - tx;
+    const dy = t.clientY - ty;
+    if(Math.abs(dy) > Math.abs(dx)) return;   // vertical scroll – ignore
+    if(Math.abs(dx) < 40) return;              // too short – ignore
+
+    const sidebar = document.getElementById('sidebar');
+    const inSidebar = sidebar.contains(target);
+
+    if(inSidebar){
+      // Swipe RIGHT inside sidebar → close / clear strong
+      if(dx > 0){
+        if(S.currentStrong) closeStrong();
+        else { S.sidebarOpen=false; sidebar.classList.add('hidden'); document.getElementById('btn-sb').classList.remove('active'); }
+      }
+    } else {
+      // Swipe in bible panels → chapter navigation
+      if(dx < 0) nextChap();   // swipe left  → next chapter
+      else        prevChap();  // swipe right → prev chapter
+    }
+  }
+
+  document.addEventListener('touchstart', onStart, {passive:true});
+  document.addEventListener('touchend',   onEnd,   {passive:true});
+})();
+function setLoad(p,t){ document.getElementById('lfill').style.width=p+'%'; document.getElementById('ltxt').textContent=t; }
+
+function initApp(){
+  setLoad(80,'Navigation...');
+  setTimeout(()=>{
+    populateBooks(); populateChaps();
+    setLoad(95,'Lade Verse...');
+    setTimeout(()=>{
+      renderAll();
+      setLoad(100,'Fertig!');
+      setTimeout(()=>{ document.getElementById('loading').style.display='none'; },300);
+    },50);
+  },50);
+}
+
+window.addEventListener('load',()=>{
+  setLoad(5,'Lade Bibeldaten...');
+
+  const files=[
+    {src:'bd_meta.js', label:'Bücher & Verweise...', pct:15},
+    {src:'bd_s51.js',  label:'Schlachter 1951...',   pct:35},
+    {src:'bd_leo.js',  label:'Leonberger NA28...',   pct:50},
+    {src:'bd_dict.js', label:'Strong Lexikon...',    pct:75},
+    {src:'bd_conc.js', label:'Konkordanz...',        pct:90}
+  ];
+
+  function loadNext(i){
+    if(i>=files.length){
+      setLoad(95,'Verarbeite...');
+      setTimeout(()=>{
+        DATA={ bs:BM.bs, bl:BM.bl, cs:BM.cs, cl:BM.cl, x:BM.x, co:BM.co,
+               vs:VS51, vl:VLEO, d:BDICT, sc:BCONC };
+        initApp();
+      },50);
+      return;
+    }
+    const f=files[i];
+    setLoad(f.pct, f.label);
+    const s=document.createElement('script');
+    s.src=f.src;
+    s.onload=()=>{ setTimeout(()=>loadNext(i+1),30); };
+    s.onerror=(e)=>{ document.getElementById('ltxt').textContent='Fehler: '+f.src+' nicht gefunden'; };
+    document.head.appendChild(s);
+  }
+
+  loadNext(0);
+});
+</script>
+
+
+</body>
+</html>
