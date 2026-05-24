@@ -1034,8 +1034,7 @@ function openSettings(){
 function closeSettings(){ document.getElementById('settings-modal').classList.remove('show'); }
 function saveSettings(){
   const input=document.getElementById('api-key-input').value.trim();
-  S.apiKey=input || 'AIzaSyDCBvD6LoGOBGfTbIZKWn2E2RklkE2KEc8';
-  localStorage.setItem('gemini_key',S.apiKey);
+  
   updateKeyStatus();
   closeSettings();
 }
